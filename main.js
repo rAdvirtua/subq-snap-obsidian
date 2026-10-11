@@ -671,6 +671,7 @@ var EngineModal = class extends import_obsidian5.Modal {
     }
   }
   onOpen() {
+    this.modalEl.addClass("snap-modal-container");
     const { contentEl } = this;
     contentEl.empty();
     contentEl.addClass("snap-engine-modal");

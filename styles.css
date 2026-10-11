@@ -1,19 +1,23 @@
 /* Modal Glass Container */
 
+.modal.snap-modal-container,
 .modal:has(.snap-engine-modal) {
-  width: 820px !important;
-  max-width: 94vw !important;
+  width: 1040px !important;
+  max-width: 96vw !important;
+  max-height: 90vh !important;
   background: #000000 !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 20px !important;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9) !important;
   padding: 0 !important;
-  overflow: hidden !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 }
 
 .snap-engine-modal {
   padding: 32px 36px;
   width: 100%;
+  box-sizing: border-box;
   color: #FFFFFF;
   background: #000000;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
@@ -365,12 +369,22 @@
 
 .snap-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
   margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 860px) {
+  .snap-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .snap-card {
+  min-width: 0;
+  overflow: hidden;
   background: #0D0D10;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
@@ -378,6 +392,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .snap-card-title {
@@ -387,10 +402,13 @@
   letter-spacing: 0.06em;
   color: #86868B;
   margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .snap-card-value {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: #FFFFFF;
@@ -398,11 +416,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 4px;
+  display: block;
+  max-width: 100%;
 }
 
 .snap-card-sub {
   font-size: 12px;
   color: #86868B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .snap-card-sub.success {
@@ -451,16 +474,24 @@
 /* Document Preview Box */
 
 .snap-doc-meta {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  max-width: 100%;
 }
 
 .snap-doc-citation {
   font-size: 12px;
   color: #2997FF;
   background: rgba(41, 151, 255, 0.08);
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 9999px;
   border: 1px solid rgba(41, 151, 255, 0.2);
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .snap-doc-box {
@@ -468,11 +499,33 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   padding: 22px 26px;
-  max-height: 270px;
+  max-height: 350px;
   overflow-y: auto;
+  overflow-x: auto;
   color: #E5E5EA;
   font-size: 13.5px;
   line-height: 1.6;
+}
+
+.snap-doc-box table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 13px;
+  overflow-x: auto;
+}
+
+.snap-doc-box th,
+.snap-doc-box td {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.snap-doc-box th {
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
+  font-weight: 600;
 }
 
 .snap-doc-box h1,
@@ -517,15 +570,23 @@
 
 .snap-matrix-metrics {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 860px) {
+  .snap-matrix-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .snap-metric-tile {
+  min-width: 0;
   background: #0D0D10;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 12px 14px;
+  box-sizing: border-box;
 }
 
 .snap-tile-label {

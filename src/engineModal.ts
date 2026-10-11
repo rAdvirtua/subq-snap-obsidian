@@ -53,6 +53,7 @@ export class EngineModal extends Modal {
   }
 
   onOpen() {
+    this.modalEl.addClass("snap-modal-container");
     const { contentEl } = this;
     contentEl.empty();
     contentEl.addClass("snap-engine-modal");
