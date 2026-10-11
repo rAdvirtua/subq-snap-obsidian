@@ -1,0 +1,21 @@
+# Node dependencies
+node_modules/
+
+# Build artifacts
+dist/
+
+# OS and IDE metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Environment and sensitive keys
+.env
+.env.*
+*.local
+
+# Python cache & test artifacts
+__pycache__/
+*.py[cod]
+scripts/
