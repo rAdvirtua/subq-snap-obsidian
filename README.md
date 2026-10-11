@@ -26,7 +26,7 @@ Designed with an ultra-minimalist dark aesthetic inspired by Neuralink and Apple
 obsidian-snap-engine/
 ├── src/
 │   ├── main.ts            # Plugin entrypoint, ribbon icon & commands
-│   ├── engineModal.ts     # Neuralink/iPhone modal UI & dual-mode pipelines
+│   ├── engineModal.ts     # Minimalist modal UI & dual-mode pipelines
 │   ├── snap.ts            # SubQ Snap System One API client (Triage, Pinpoint, Verify)
 │   ├── writer.ts          # Gemini Flash resilient writer with auto-fallback
 │   ├── corpus.ts          # Whole-vault markdown reader & token estimator
@@ -48,8 +48,8 @@ obsidian-snap-engine/
 
 ### 1. Development Build
 ```bash
-git clone https://github.com/your-username/obsidian-snap-engine.git
-cd obsidian-snap-engine
+git clone https://github.com/radvirtua/subq-snap-obsidian.git
+cd subq-snap-obsidian
 npm install
 npm run build
 ```
@@ -67,42 +67,6 @@ Copy `main.js`, `styles.css`, and `manifest.json` into your Obsidian vault:
 
 Alternatively, set persistent environment variables:
 `SUBQ_API_KEY` and `GEMINI_API_KEY`.
-
----
-
-## Publishing to the Official Obsidian Community Directory
-
-To release this plugin to the public Obsidian Community Store:
-
-1. **Push to GitHub**:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial release of Research & Ideation Engine v1.0.0"
-   git remote add origin https://github.com/<your-username>/obsidian-snap-engine.git
-   git push -u origin main
-   ```
-
-2. **Create a GitHub Release**:
-   - Create a release tag matching the version in `manifest.json` (e.g. `1.0.0`).
-   - Attach these 3 files as assets to the release:
-     - `manifest.json`
-     - `main.js`
-     - `styles.css`
-
-3. **Submit a Pull Request to Obsidian Releases**:
-   - Fork [`obsidianmd/obsidian-releases`](https://github.com/obsidianmd/obsidian-releases).
-   - In `community-plugins.json`, add your entry in alphabetical order:
-     ```json
-     {
-       "id": "obsidian-snap-engine",
-       "name": "Research & Ideation Engine",
-       "author": "Anura",
-       "description": "SubQ Snap 384K decision core for whole-vault evidence triage, section pinpointing, and verifiable note synthesis.",
-       "repo": "your-username/obsidian-snap-engine"
-     }
-     ```
-   - Open a Pull Request. The Obsidian team will review and approve.
 
 ---
 
