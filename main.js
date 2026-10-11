@@ -33,7 +33,7 @@ var import_obsidian7 = require("obsidian");
 var DEFAULT_SETTINGS = {
   subqApiKey: "",
   geminiApiKey: "",
-  geminiModel: "gemini-3.8-flash"
+  geminiModel: "gemini-3.5-flash-lite"
 };
 
 // src/settings.ts
@@ -66,8 +66,8 @@ var SnapEngineSettingTab = class extends import_obsidian.PluginSettingTab {
       if (inputEl)
         inputEl.type = "password";
     });
-    new import_obsidian.Setting(containerEl).setName("Gemini Model").setDesc("Select the Gemini model to use").addDropdown(
-      (dropdown) => dropdown.addOption("gemini-3.8-flash", "gemini-3.8-flash").addOption("gemini-3.5-flash", "gemini-3.5-flash").addOption("gemini-3.7-flash", "gemini-3.7-flash").setValue(this.plugin.settings.geminiModel).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setName("Gemini Model").setDesc("Select the Gemini model for note generation").addDropdown(
+      (dropdown) => dropdown.addOption("gemini-3.5-flash-lite", "gemini-3.5-flash-lite (Fastest \xB7 Recommended)").addOption("gemini-3.6-flash", "gemini-3.6-flash (Balanced)").addOption("gemini-3.5-flash", "gemini-3.5-flash").setValue(this.plugin.settings.geminiModel || "gemini-3.5-flash-lite").onChange(async (value) => {
         this.plugin.settings.geminiModel = value;
         await this.plugin.saveSettings();
       })
@@ -544,44 +544,51 @@ Output ONLY clean Obsidian markdown. Do not include markdown code fences or conv
 }
 async function callGeminiWithFallbacks(apiKey, model, prompt) {
   var _a, _b, _c, _d, _e;
-  const fallbackModels = [model, "gemini-2.5-flash", "gemini-3.5-flash", "gemini-flash-latest"];
-  const modelsToTry = Array.from(new Set(fallbackModels));
+  const preferred = model && !model.includes("3.8") ? model : "gemini-3.5-flash-lite";
+  const fallbackModels = [
+    preferred,
+    "gemini-3.5-flash-lite",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+    "gemini-3.1-flash-lite",
+    "gemini-3-flash-preview"
+  ];
+  const modelsToTry = Array.from(new Set(fallbackModels)).filter(Boolean);
   let lastError = null;
   for (const currentModel of modelsToTry) {
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
-        const response = await (0, import_obsidian3.requestUrl)({
-          url,
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              maxOutputTokens: 2500,
-              temperature: 0.7
-            }
-          })
-        });
-        const data = response.json;
-        if (data.error) {
-          throw new Error(data.error.message || `HTTP ${data.error.code}`);
-        }
-        let text = ((_e = (_d = (_c = (_b = (_a = data.candidates) == null ? void 0 : _a[0]) == null ? void 0 : _b.content) == null ? void 0 : _c.parts) == null ? void 0 : _d[0]) == null ? void 0 : _e.text) || "";
-        text = text.replace(/^```markdown\n?/i, "").replace(/^```\n?/, "").replace(/\n?```$/, "");
-        if (text.trim()) {
-          return text;
-        }
-      } catch (err) {
-        lastError = err;
-        const errMsg = (err == null ? void 0 : err.message) || String(err);
-        const status = (err == null ? void 0 : err.status) || 0;
-        if (status === 503 || status === 429 || errMsg.includes("503") || errMsg.includes("demand")) {
-          await new Promise((r) => setTimeout(r, 1200 * attempt));
-          continue;
-        }
-        break;
+    let timer;
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
+      const timeoutPromise = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Timeout on ${currentModel}`)), 9e3);
+      });
+      const fetchPromise = (0, import_obsidian3.requestUrl)({
+        url,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            maxOutputTokens: 2500,
+            temperature: 0.7
+          }
+        })
+      });
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
+      clearTimeout(timer);
+      const data = response.json;
+      if (data == null ? void 0 : data.error) {
+        throw new Error(data.error.message || `HTTP ${data.error.code}`);
       }
+      let text = ((_e = (_d = (_c = (_b = (_a = data == null ? void 0 : data.candidates) == null ? void 0 : _a[0]) == null ? void 0 : _b.content) == null ? void 0 : _c.parts) == null ? void 0 : _d[0]) == null ? void 0 : _e.text) || "";
+      text = text.replace(/^```markdown\n?/i, "").replace(/^```\n?/, "").replace(/\n?```$/, "");
+      if (text.trim()) {
+        return text;
+      }
+    } catch (err) {
+      clearTimeout(timer);
+      lastError = err;
+      continue;
     }
   }
   throw new Error(`Gemini generation failed: ${(lastError == null ? void 0 : lastError.message) || lastError || "Unknown error"}`);

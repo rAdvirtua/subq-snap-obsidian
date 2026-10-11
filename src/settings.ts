@@ -50,13 +50,13 @@ export class SnapEngineSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Gemini Model")
-      .setDesc("Select the Gemini model to use")
+      .setDesc("Select the Gemini model for note generation")
       .addDropdown((dropdown) =>
         dropdown
-          .addOption("gemini-3.8-flash", "gemini-3.8-flash")
+          .addOption("gemini-3.5-flash-lite", "gemini-3.5-flash-lite (Fastest · Recommended)")
+          .addOption("gemini-3.6-flash", "gemini-3.6-flash (Balanced)")
           .addOption("gemini-3.5-flash", "gemini-3.5-flash")
-          .addOption("gemini-3.7-flash", "gemini-3.7-flash")
-          .setValue(this.plugin.settings.geminiModel)
+          .setValue(this.plugin.settings.geminiModel || "gemini-3.5-flash-lite")
           .onChange(async (value) => {
             this.plugin.settings.geminiModel = value;
             await this.plugin.saveSettings();

@@ -35,7 +35,7 @@ export interface SnapEngineSettings {
 export const DEFAULT_SETTINGS: SnapEngineSettings = {
   subqApiKey: "",
   geminiApiKey: "",
-  geminiModel: "gemini-3.8-flash",
+  geminiModel: "gemini-3.5-flash-lite",
 };
 
 export interface EngineResult {

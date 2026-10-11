@@ -61,50 +61,61 @@ Output ONLY clean Obsidian markdown. Do not include markdown code fences or conv
 }
 
 async function callGeminiWithFallbacks(apiKey: string, model: string, prompt: string): Promise<string> {
-  const fallbackModels = [model, 'gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-flash-latest'];
-  const modelsToTry = Array.from(new Set(fallbackModels));
+  const preferred = model && !model.includes('3.8') ? model : 'gemini-3.5-flash-lite';
+  const fallbackModels = [
+    preferred,
+    'gemini-3.5-flash-lite',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash',
+    'gemini-3.1-flash-lite',
+    'gemini-3-flash-preview',
+  ];
+  const modelsToTry = Array.from(new Set(fallbackModels)).filter(Boolean);
 
   let lastError: any = null;
 
   for (const currentModel of modelsToTry) {
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
-        const response = await requestUrl({
-          url,
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              maxOutputTokens: 2500,
-              temperature: 0.7,
-            }
-          }),
-        });
+    let timer: any;
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
 
-        const data = response.json;
-        if (data.error) {
-          throw new Error(data.error.message || `HTTP ${data.error.code}`);
-        }
+      const timeoutPromise = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Timeout on ${currentModel}`)), 9000);
+      });
 
-        let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        text = text.replace(/^```markdown\n?/i, '').replace(/^```\n?/, '').replace(/\n?```$/, '');
-        if (text.trim()) {
-          return text;
-        }
-      } catch (err: any) {
-        lastError = err;
-        const errMsg = err?.message || String(err);
-        const status = err?.status || 0;
-        if (status === 503 || status === 429 || errMsg.includes('503') || errMsg.includes('demand')) {
-          await new Promise((r) => setTimeout(r, 1200 * attempt));
-          continue;
-        }
-        break;
+      const fetchPromise = requestUrl({
+        url,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            maxOutputTokens: 2500,
+            temperature: 0.7,
+          },
+        }),
+      });
+
+      const response = await Promise.race([fetchPromise, timeoutPromise]) as any;
+      clearTimeout(timer);
+
+      const data = response.json;
+      if (data?.error) {
+        throw new Error(data.error.message || `HTTP ${data.error.code}`);
       }
+
+      let text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      text = text.replace(/^```markdown\n?/i, '').replace(/^```\n?/, '').replace(/\n?```$/, '');
+      if (text.trim()) {
+        return text;
+      }
+    } catch (err: any) {
+      clearTimeout(timer);
+      lastError = err;
+      continue;
     }
   }
 
   throw new Error(`Gemini generation failed: ${lastError?.message || lastError || 'Unknown error'}`);
 }
+
