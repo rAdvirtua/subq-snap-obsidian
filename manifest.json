@@ -4,6 +4,6 @@
   "version": "1.0.0",
   "minAppVersion": "0.15.0",
   "description": "SubQ Snap-powered research analysis: reads your entire vault, pinpoints relevant evidence, and generates structured notes.",
-  "author": "Anura",
+  "author": "rAdvirtua",
   "isDesktopOnly": false
 }
